@@ -170,7 +170,7 @@ fn derive_named_struct(
 
     Ok(quote! {
         impl Prc for #ident {
-            fn read_param<R: ::std::io::Read + ::std::io::Seek>(reader: &mut R, offsets: #path::FileOffsets) -> Result<Self> {
+            fn read_param<R: ::std::io::Read + ::std::io::Seek>(reader: &mut R, offsets: #path::FileOffsets) -> #path::Result<Self> {
                 let data = #path::StructData::from_stream(reader)?;
                 Ok(Self {
                     #(

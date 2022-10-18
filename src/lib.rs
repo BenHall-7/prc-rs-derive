@@ -1,23 +1,14 @@
 extern crate proc_macro;
 use crate::proc_macro::TokenStream;
-use proc_macro2::Span;
-use proc_macro2::TokenStream as Tokens;
-use quote::spanned::Spanned;
-use quote::ToTokens;
-use quote::{format_ident, quote};
-use std::iter::Peekable;
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
+use syn::token::Comma;
 use syn::token::Eq;
-use syn::token::{Comma, Where};
-use syn::FieldsNamed;
+
 use syn::Lit;
 use syn::Path;
-use syn::{
-    parenthesized, parse, Attribute, Data, DataEnum, DeriveInput, Error, Field, Fields,
-    GenericParam, Generics, Ident, ImplGenerics, Index, Result as SynResult, TypeGenerics,
-    TypeParam, Visibility, WhereClause, WherePredicate,
-};
+use syn::{Attribute, Data, DeriveInput, Field, Fields, Ident, Result as SynResult};
 
 const NAMED_STRUCT_ONLY_ERR: &str = "Derive macro only implemented for named structs";
 
@@ -47,7 +38,7 @@ fn derive_or_error(input: TokenStream) -> SynResult<TokenStream> {
     match input.data {
         Data::Struct(data_struct) => match &data_struct.fields {
             Fields::Named(fields) => derive_named_struct(ident, &attrs, &fields.named),
-            Fields::Unnamed(fields) => panic!("{}", NAMED_STRUCT_ONLY_ERR),
+            Fields::Unnamed(..) => panic!("{}", NAMED_STRUCT_ONLY_ERR),
             Fields::Unit => panic!("{}", NAMED_STRUCT_ONLY_ERR),
         },
         _ => panic!("{}", NAMED_STRUCT_ONLY_ERR),
@@ -170,8 +161,8 @@ fn derive_named_struct(
 
     Ok(quote! {
         impl Prc for #ident {
-            fn read_param<R: ::std::io::Read + ::std::io::Seek>(reader: &mut R, offsets: #path::FileOffsets) -> #path::Result<Self> {
-                let data = #path::StructData::from_stream(reader)?;
+            fn read_param<R: ::std::io::Read + ::std::io::Seek>(reader: &mut R, offsets: #path::prc_trait::FileOffsets) -> #path::prc_trait::Result<Self> {
+                let data = #path::prc_trait::StructData::from_stream(reader)?;
                 Ok(Self {
                     #(
                         #struct_names: data.read_child(reader, #hashes, offsets)?,

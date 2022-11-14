@@ -165,7 +165,7 @@ fn derive_named_struct(
                 let data = #path::prc_trait::StructData::from_stream(reader)?;
                 Ok(Self {
                     #(
-                        #struct_names: data.read_child(reader, #hashes, offsets)?,
+                        #struct_names: Prc::read_from_struct(reader, #hashes, offsets, data)?,
                     )*
                 })
             }
